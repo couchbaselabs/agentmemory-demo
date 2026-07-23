@@ -428,7 +428,7 @@ _NOISE_POOL: list[str] = [
     "Guest Rachel Green complained that the pool was too cold in February.",
     "Guest Ben Harris was unhappy with slow Wi-Fi in the conference room.",
     "Guest Nina Flores reported a broken air conditioning unit during her summer visit.",
-    "Guest James Clark holds a Platinum loyalty tier and expects room upgrades.",
+    "Guest James Clark is a frequent returning guest and expects room upgrades.",
     "Guest Amy White books 3 nights every quarter for a business review meeting.",
     "Guest Daniel Park always uses last-minute deals from the app.",
     "Guest Sarah Johnson redeems loyalty points exclusively for spa credits.",

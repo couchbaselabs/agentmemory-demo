@@ -542,9 +542,9 @@ ROLES = {
 }
 
 SEED_GUEST_PERSONAS = {
-    "alice_chen": {"name": "Alice Chen", "tier": "Platinum", "type": "Corporate"},
-    "bob_morrison": {"name": "Bob Morrison", "tier": "Gold", "type": "Occasion"},
-    "charlie_wu": {"name": "Charlie Wu", "tier": "Silver", "type": "Group Organiser"},
+    "alice_chen": {"name": "Alice Chen", "type": "Corporate"},
+    "bob_morrison": {"name": "Bob Morrison", "type": "Occasion"},
+    "charlie_wu": {"name": "Charlie Wu", "type": "Group Organiser"},
 }
 
 
@@ -790,7 +790,6 @@ def warm_up_guest_users():
         if uid not in SEED_GUEST_PERSONAS and uid not in dyn:
             dyn[uid] = {
                 "name": name,
-                "tier": "Guest",
                 "type": "New member",
             }
 
@@ -1371,8 +1370,6 @@ def render_dashboard():
                 uid
             ) or st.session_state.dynamic_guest_personas.get(uid, {})
             name = persona.get("name", uid)
-            tier = persona.get("tier", "Guest")
-            ptype = persona.get("type", "Unknown")
 
             # Check if user is in guest_users (loaded from backend)
             has_memory = uid in st.session_state.guest_users
@@ -1381,7 +1378,7 @@ def render_dashboard():
                 st.markdown(
                     f"""
                 <div class="list-item">
-                    <strong>{name}</strong> - {tier} · {ptype}
+                    <strong>{name}</strong>
                     <span style="color:rgba(255,160,140,0.7); margin-left:0.5rem;">
                         (no memory found in store)
                     </span>
@@ -1396,7 +1393,7 @@ def render_dashboard():
             st.markdown(
                 f"""
             <div class="list-item">
-                <strong>{name}</strong> - {tier} · {ptype}
+                <strong>{name}</strong>
                 <span style="color:rgba(230,32,32,0.7); margin-left:0.5rem;">{status}</span>
             </div>
             """,
@@ -1701,7 +1698,7 @@ def render_briefings():
         if uid not in st.session_state.guest_users:
             continue
 
-        st.markdown(f"### {persona['name']} · {persona['tier']} · {persona['type']}")
+        st.markdown(f"### {persona['name']}")
 
         col_d, col_t, col_btn = st.columns([1.4, 1, 1.2])
         with col_d:
@@ -1799,7 +1796,7 @@ def render_briefing_card(b: dict):
 
     Args:
         b: Briefing dict as returned by :class:`BriefingGraph`. Expected
-            keys: ``guest``, ``arrival``, ``tier``, ``preferences``,
+            keys: ``guest``, ``arrival``, ``preferences``,
             ``prior_complaints``, ``safety_flags``,
             ``occasion_context``, ``recovery_actions``, ``summary``.
     """
@@ -1808,7 +1805,6 @@ def render_briefing_card(b: dict):
     st.markdown(
         f"""
     <div class="kv-line"><span class="kv-key">Arrival</span><span class="kv-val">{b.get("arrival", "")}</span></div>
-    <div class="kv-line"><span class="kv-key">Tier</span><span class="kv-val">{b.get("tier", "")}</span></div>
     <div class="kv-line"><span class="kv-key">Summary</span><span class="kv-val">{b.get("summary", "")}</span></div>
     <div class="kv-line"><span class="kv-key">Occasion</span><span class="kv-val">{b.get("occasion_context", "") or "-"}</span></div>
     """,
@@ -2704,7 +2700,7 @@ memory-search (fan-out, parallel)
    ├─ "complaint issue problem wait service"
    ├─ "allergy dietary food restriction"
    ├─ "occasion anniversary celebration"
-   ├─ "loyalty tier spend booking"
+   ├─ "loyalty spend booking"
    ├─ "third party husband wife companion family"
    └─ "recovery apology compensation upgrade"
   │
@@ -2751,7 +2747,7 @@ multi-user-memory-fan-out
    │     ├─ "complaint issue problem"
    │     ├─ "wait delay slow"
    │     ├─ "request preference repeat"
-   │     ├─ "spend booking loyalty tier"
+   │     ├─ "spend booking loyalty"
    │     ├─ "allergy dietary safety"
    │     ├─ "event group facilities"
    │     └─ "compliment positive feedback"

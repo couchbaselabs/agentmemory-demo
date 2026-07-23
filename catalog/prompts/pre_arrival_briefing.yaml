@@ -15,9 +15,6 @@ output:
       type: string
     arrival:
       type: string
-    tier:
-      type: string
-      enum: [Platinum, Gold, Silver, Guest]
     preferences:
       type: array
       items:
@@ -50,7 +47,6 @@ content: |
   {
     "guest": "<full name>",
     "arrival": "<arrival time>",
-    "tier": "<Platinum|Gold|Silver|Guest>",
     "preferences": ["short noun phrase", ...],
     "prior_complaints": [
       {"event": "short description", "severity": "high|medium|low"}

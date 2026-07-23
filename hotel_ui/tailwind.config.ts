@@ -18,11 +18,6 @@ const config: Config = {
           light: "#FFFDF8",
           warm: "#FFE4A8",
         },
-        tier: {
-          platinum: "#8B6914",
-          gold: "#B8860B",
-          silver: "#708090",
-        },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

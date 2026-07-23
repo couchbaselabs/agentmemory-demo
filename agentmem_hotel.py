@@ -182,27 +182,6 @@ h1, h2, h3, h4 {
     color: #1A1A1A;
 }
 
-.guest-tier {
-    display: inline-block;
-    font-size: 0.62rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 0.15rem 0.55rem;
-    border-radius: 20px;
-    margin-left: 0.5rem;
-    font-weight: 500;
-}
-
-.persona-card .guest-tier {
-    display: block;
-    width: fit-content;
-    margin-left: 0;
-    margin-top: 0.3rem;
-}
-
-.tier-platinum { background: rgba(230,32,32,0.12); color: #E62020; border: 1px solid rgba(230,32,32,0.3); }
-.tier-gold { background: rgba(247,148,29,0.12); color: #C97B10; border: 1px solid rgba(247,148,29,0.3); }
-.tier-silver { background: rgba(100,100,100,0.08); color: #666; border: 1px solid rgba(100,100,100,0.2); }
 
 .guest-stay {
     font-size: 0.78rem;
@@ -561,10 +540,7 @@ PERSONAS = {
         "user_id": "alice_chen",
         "display_name": "Alice",
         "full_name": "Alice",
-        "tier": "Platinum",
-        "tier_class": "tier-platinum",
         "type": "Corporate Traveler",
-        "stays": "6 stays · Business",
         "desc": "Frequent business traveler. Dense history, high stakes.",
         "initials": "AC",
         "password": "123",
@@ -573,10 +549,7 @@ PERSONAS = {
         "user_id": "bob_morrison",
         "display_name": "Bob",
         "full_name": "Bob",
-        "tier": "Gold",
-        "tier_class": "tier-gold",
         "type": "Occasion Traveler",
-        "stays": "3 stays · Personal",
         "desc": "Anniversary stays, emotionally significant trips.",
         "initials": "BO",
         "password": "123",
@@ -585,10 +558,7 @@ PERSONAS = {
         "user_id": "charlie_wu",
         "display_name": "Charlie",
         "full_name": "Charlie",
-        "tier": "Silver",
-        "tier_class": "tier-silver",
         "type": "Group Organizer",
-        "stays": "4 events · Groups",
         "desc": "Books for 30–50 people. Doesn't stay himself.",
         "initials": "CM",
         "password": "123",
@@ -1854,17 +1824,12 @@ with sidebar_col:
     if pkey in PERSONAS:
         pdata = PERSONAS[pkey]
         display_name = pdata["display_name"]
-        tier = pdata.get("tier", "Guest")
-        tier_class = pdata.get("tier_class", "")
-        meta = pdata.get("stays", "")
         desc = pdata.get("desc", "")
 
         st.markdown(
             f"""
         <div class="persona-card active">
             <span class="persona-name">{display_name}</span>
-            <span class="guest-tier {tier_class}">{tier}</span>
-            <div class="persona-meta">{meta}</div>
             <div class="persona-desc">{desc}</div>
         </div>
         """,
@@ -1879,7 +1844,6 @@ with sidebar_col:
             f"""
         <div class="persona-card active">
             <span class="persona-name">{user_name}</span>
-            <span class="guest-tier" style="background: rgba(230,32,32,0.12); color: #E62020; padding:0.2rem 0.6rem; border-radius:4px; font-size:0.75rem;">Guest</span>
             <div class="persona-desc">Welcome to Couchbase Agent Memory Hotel</div>
         </div>
         """,
@@ -2185,8 +2149,6 @@ with main_col:
             pdata = PERSONAS[pkey]
             initials = pdata.get("initials", pdata["display_name"][0].upper())
             full_name = pdata.get("full_name", pdata["display_name"])
-            tier = pdata.get("tier", "Guest")
-            tier_class = pdata.get("tier_class", "")
         else:
             # New user
             user = st.session_state.agentmem_user
@@ -2195,8 +2157,6 @@ with main_col:
             initials = (
                 "".join([word[0].upper() for word in user_name.split()])[:2] or "?"
             )
-            tier = "Guest"
-            tier_class = ""
 
         session = st.session_state.agentmem_session
 
@@ -2211,7 +2171,6 @@ with main_col:
                 <div>
                     <span style="font-family:'Inter',sans-serif; font-size:1.1rem;
                                  font-weight:600; color:#1A1A1A;">{full_name}</span>
-                    <span class="guest-tier {tier_class}">{tier}</span>
                     <div style="font-size:0.75rem; color:rgba(26,26,26,0.5);">Session: {session_id}</div>
                 </div>
             </div>

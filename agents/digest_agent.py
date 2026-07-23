@@ -50,7 +50,7 @@ DIGEST_QUERIES = [
     "complaint issue problem",
     "wait delay slow",
     "request preference repeat",
-    "spend booking loyalty tier",
+    "spend booking loyalty",
     "allergy dietary safety",
     "event group facilities",
     "compliment positive feedback",

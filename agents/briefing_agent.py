@@ -47,7 +47,7 @@ BRIEFING_QUERIES = [
     "complaint issue problem service dissatisfied",
     "recovery apology compensation upgrade",
     "occasion anniversary birthday celebration honeymoon",
-    "loyalty tier booking frequent guest",
+    "loyalty booking frequent guest",
     # Allergy & dietary
     "allergy intolerance cannot eat dietary restriction",
     "strong aversion medical alert EpiPen anaphylaxis",
@@ -125,7 +125,6 @@ class BriefingAgent:
         parsed = safe_parse_json(response.content) or {
             "guest": state.get("guest_name", ""),
             "arrival": state.get("arrival_time", ""),
-            "tier": "Guest",
             "preferences": [],
             "prior_complaints": [],
             "safety_flags": [],
