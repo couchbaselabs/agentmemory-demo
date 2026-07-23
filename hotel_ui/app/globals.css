@@ -1,0 +1,800 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base (exact Streamlit values) ───────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  background: #FFF8EE;
+  color: #1A1A1A;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+body {
+  background: radial-gradient(ellipse at 85% 0%, #FFE4A8 0%, #FFF8EE 45%, #FFFDF8 100%);
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: 0.01em;
+  color: #1A1A1A;
+}
+
+/* ── Hotel header ─────────────────────────────────────────────────────── */
+
+.hotel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(230, 32, 32, 0.15);
+  background: #FFF8EE;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  margin: 0;
+}
+
+/* Wordmark: plain black, uppercase — NOT gradient */
+.hotel-wordmark {
+  font-family: 'Inter', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #1A1A1A;
+  text-transform: uppercase;
+}
+
+/* Tagline: red-tinted */
+.hotel-tagline {
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  color: rgba(230, 32, 32, 0.6);
+  text-transform: uppercase;
+  margin-top: 0.2rem;
+}
+
+/* ── Two-column portal layout ─────────────────────────────────────────── */
+
+.portal-layout {
+  display: flex;
+  height: calc(100vh - 72px);
+  overflow: hidden;
+}
+
+.portal-sidebar {
+  width: 280px;
+  min-width: 180px;
+  max-width: 480px;
+  background: rgba(255, 248, 238, 0.85);
+  border-right: 1px solid rgba(230, 32, 32, 0.12);
+  overflow-y: auto;
+  padding: 1.2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+/* Drag handle between sidebar and main */
+.resize-handle {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  position: relative;
+  z-index: 10;
+}
+.resize-handle:hover,
+.resize-handle.dragging {
+  background: rgba(230, 32, 32, 0.25);
+}
+
+.portal-main {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  /* transparent so body gradient shows through */
+  background: transparent;
+  min-width: 0;
+}
+
+/* ── Tier badges — exact Streamlit colours ────────────────────────────── */
+
+.tier-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.55rem;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+/* Platinum = red (matches Streamlit exactly) */
+.tier-platinum {
+  background: rgba(230, 32, 32, 0.12);
+  color: #E62020;
+  border: 1px solid rgba(230, 32, 32, 0.3);
+}
+
+/* Gold = orange */
+.tier-gold {
+  background: rgba(247, 148, 29, 0.12);
+  color: #C97B10;
+  border: 1px solid rgba(247, 148, 29, 0.3);
+}
+
+/* Silver = gray */
+.tier-silver {
+  background: rgba(100, 100, 100, 0.08);
+  color: #666;
+  border: 1px solid rgba(100, 100, 100, 0.2);
+}
+
+/* ── Persona / role cards ─────────────────────────────────────────────── */
+
+.persona-card {
+  border: 1px solid rgba(230, 32, 32, 0.15);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.6rem;
+}
+
+.persona-card:hover {
+  border-color: rgba(230, 32, 32, 0.4);
+  background: rgba(230, 32, 32, 0.04);
+}
+
+.persona-card.active {
+  border-color: #E62020;
+  background: rgba(230, 32, 32, 0.06);
+}
+
+.persona-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+/* Meta = uppercase red-tinted */
+.persona-meta {
+  font-size: 0.72rem;
+  color: rgba(230, 32, 32, 0.7);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 0.15rem;
+}
+
+.persona-desc {
+  font-size: 0.8rem;
+  color: rgba(26, 26, 26, 0.55);
+  margin-top: 0.4rem;
+  line-height: 1.4;
+}
+
+/* Ops role card — identical to persona card */
+.role-card {
+  border: 1px solid rgba(230, 32, 32, 0.15);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.6rem;
+}
+.role-card.active {
+  border-color: #E62020;
+  background: rgba(230, 32, 32, 0.06);
+}
+.role-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+.role-meta {
+  font-size: 0.72rem;
+  color: rgba(230, 32, 32, 0.7);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 0.15rem;
+}
+
+/* ── Avatars ──────────────────────────────────────────────────────────── */
+
+.guest-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E62020, #F7941D);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+/* Concierge avatar = same red→orange gradient */
+.concierge-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E62020, #F7941D);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+
+/* ── Chat bubbles — exact Streamlit values ────────────────────────────── */
+
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.5rem 1rem 1.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(230, 32, 32, 0.2) transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  background: transparent;
+}
+
+.msg-guest {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+  padding-right: 0;
+}
+
+/* Guest bubble: light red wash, dark text — NOT solid red */
+.bubble-guest {
+  background: rgba(230, 32, 32, 0.08);
+  border: 1px solid rgba(230, 32, 32, 0.2);
+  border-radius: 16px 16px 4px 16px;
+  padding: 0.8rem 1.2rem;
+  font-size: 0.88rem;
+  color: #1A1A1A;
+  line-height: 1.5;
+}
+
+.msg-concierge {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 0.5rem;
+  gap: 0.7rem;
+  align-items: flex-start;
+}
+
+/* Concierge bubble: white with red left accent border */
+.bubble-concierge {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(230, 32, 32, 0.12);
+  border-left: 2px solid rgba(230, 32, 32, 0.5);
+  border-radius: 4px 16px 16px 16px;
+  padding: 0.8rem 1.1rem;
+  max-width: 75%;
+  font-size: 0.88rem;
+  color: rgba(26, 26, 26, 0.9);
+  line-height: 1.6;
+}
+
+.concierge-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(230, 32, 32, 0.6);
+  margin-bottom: 0.3rem;
+}
+
+.bubble-timestamp {
+  font-size: 0.65rem;
+  opacity: 0.5;
+  margin-top: 0.3rem;
+  display: block;
+}
+
+/* ── Status pipeline ──────────────────────────────────────────────────── */
+
+.status-pipeline {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(230, 32, 32, 0.12);
+  border-radius: 8px;
+  padding: 0.8rem 1.1rem;
+  margin: 0.5rem 0;
+  font-size: 0.78rem;
+  font-family: 'Inter', monospace;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+  color: rgba(26, 26, 26, 0.45);
+}
+
+.status-line.done  { color: rgba(26, 26, 26, 0.8); }
+.status-line.active { color: #E62020; }
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(230, 32, 32, 0.25);
+  flex-shrink: 0;
+}
+
+.status-dot.done    { background: #4caf82; }
+.status-dot.running { background: #E62020; animation: pulse 1s infinite; }
+.status-dot.pending { background: rgba(230, 32, 32, 0.25); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ── Memory update card (green/teal) ─────────────────────────────────── */
+
+.memory-update-card {
+  display: inline-block;
+  background: rgba(76, 175, 130, 0.05);
+  border: 1px solid rgba(76, 175, 130, 0.2);
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  margin: 0.5rem 0 0.5rem 0;
+  font-size: 0.76rem;
+  color: rgba(50, 120, 80, 0.8);
+  width: fit-content;
+}
+
+.memory-update-title {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4caf82;
+  margin-bottom: 0.35rem;
+  font-weight: 500;
+}
+
+/* ── Panel section title (red-tinted) ────────────────────────────────── */
+
+.panel-section-title {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(230, 32, 32, 0.55);
+  margin: 1.2rem 0 0.6rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(230, 32, 32, 0.1);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+
+/* Default button: red-tinted bg + red border */
+.btn-primary {
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #E62020;
+  color: #ffffff;
+  border: none;
+}
+.btn-primary:hover  { background: #c91c1c; }
+.btn-primary:active { background: #b01818; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Secondary = same red-tinted style as Streamlit default buttons */
+.btn-secondary {
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 400;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(230, 32, 32, 0.04);
+  border: 1px solid rgba(230, 32, 32, 0.15);
+  color: rgba(26, 26, 26, 0.8);
+  text-align: left;
+  min-height: 2.5rem;
+  width: 100%;
+}
+.btn-secondary:hover {
+  background: rgba(230, 32, 32, 0.09);
+  border-color: rgba(230, 32, 32, 0.35);
+  color: #1A1A1A;
+}
+.btn-secondary:active {
+  background: rgba(230, 32, 32, 0.14);
+  border-color: rgba(230, 32, 32, 0.5);
+}
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-danger {
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 400;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(198, 32, 32, 0.06);
+  border: 1px solid rgba(198, 32, 32, 0.3);
+  color: #C62020;
+  width: 100%;
+  min-height: 2.5rem;
+}
+.btn-danger:hover  { background: rgba(198, 32, 32, 0.12); }
+.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Form inputs ──────────────────────────────────────────────────────── */
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid rgba(26, 26, 26, 0.2);
+  border-radius: 6px;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  color: #1A1A1A;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: #E62020;
+  box-shadow: 0 0 0 1px rgba(230, 32, 32, 0.2);
+}
+
+.form-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #1A1A1A;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+/* ── Chat input bar ───────────────────────────────────────────────────── */
+
+.chat-input-bar {
+  padding: 0.9rem 1.5rem;
+  background: #FFF8EE;
+  border-top: 1px solid rgba(230, 32, 32, 0.12);
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.chat-input-field {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid rgba(230, 32, 32, 0.2);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  font-size: 0.88rem;
+  font-family: 'Inter', sans-serif;
+  color: #1A1A1A;
+  resize: none;
+  min-height: 44px;
+  max-height: 120px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.chat-input-field:focus {
+  border-color: rgba(230, 32, 32, 0.4);
+  box-shadow: 0 0 0 1px rgba(230, 32, 32, 0.15);
+}
+.chat-input-field:disabled { opacity: 0.5; cursor: not-allowed; }
+.chat-input-field::placeholder { color: rgba(26, 26, 26, 0.4); }
+
+.chat-send-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #E62020;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.chat-send-btn:hover:not(:disabled)  { background: #c91c1c; }
+.chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Memory policy badge ──────────────────────────────────────────────── */
+
+.memory-policy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.memory-policy-persistent { background: rgba(76,175,130,0.08); color: #3a9468; border: 1px solid rgba(76,175,130,0.25); }
+.memory-policy-stay       { background: rgba(247,148,29,0.08); color: #C97B10; border: 1px solid rgba(247,148,29,0.25); }
+.memory-policy-anonymous  { background: rgba(198,32,32,0.06);  color: #C62020; border: 1px solid rgba(198,32,32,0.2); }
+
+/* ── Readonly banner ──────────────────────────────────────────────────── */
+
+.readonly-banner {
+  padding: 0.5rem 1.2rem;
+  background: rgba(247, 148, 29, 0.07);
+  border-bottom: 1px solid rgba(247, 148, 29, 0.2);
+  font-size: 0.8rem;
+  color: rgba(26, 26, 26, 0.7);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ── KPI card (ops dashboard) ─────────────────────────────────────────── */
+
+.kpi-card {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(230, 32, 32, 0.13);
+  border-radius: 12px;
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.kpi-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1;
+}
+
+.kpi-label {
+  font-size: 0.78rem;
+  color: rgba(26, 26, 26, 0.5);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* ── List items — left-border only ────────────────────────────────────── */
+
+.list-item {
+  padding: 0.4rem 0.7rem;
+  border-left: 2px solid rgba(230, 32, 32, 0.3);
+  background: rgba(255, 255, 255, 0.5);
+  margin: 0.3rem 0;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.85rem;
+  color: rgba(26, 26, 26, 0.85);
+}
+
+.list-item.warning {
+  border-left-color: rgba(198, 32, 32, 0.6);
+  background: rgba(198, 32, 32, 0.04);
+}
+
+/* ── Severity badges (exact Streamlit values) ─────────────────────────── */
+
+.severity-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.severity-critical { color: #C62020; border: 1px solid rgba(198,32,32,0.4); background: rgba(198,32,32,0.06); }
+.severity-high     { color: #C62020; border: 1px solid rgba(198,32,32,0.4); background: rgba(198,32,32,0.06); }
+.severity-medium   { color: #C97B10; border: 1px solid rgba(247,148,29,0.4); background: rgba(247,148,29,0.06); }
+.severity-low      { color: #666;    border: 1px solid rgba(150,150,150,0.3); }
+
+/* ── Nav buttons (ops sidebar) ────────────────────────────────────────── */
+
+.nav-btn {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 400;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(26, 26, 26, 0.8);
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.nav-btn:hover {
+  background: rgba(230, 32, 32, 0.05);
+  border-color: rgba(230, 32, 32, 0.2);
+}
+.nav-btn.active {
+  background: rgba(230, 32, 32, 0.08);
+  border-color: rgba(230, 32, 32, 0.3);
+  color: #E62020;
+  font-weight: 600;
+}
+
+/* ── Delete dialog overlay ────────────────────────────────────────────── */
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.dialog-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 420px;
+  max-width: 90vw;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(220, 80, 60, 0.2);
+}
+
+/* ── Expander / accordion ─────────────────────────────────────────────── */
+
+.expander {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(230, 32, 32, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.expander-header {
+  padding: 0.6rem 0.9rem;
+  background: transparent;
+  font-size: 0.8rem;
+  color: rgba(26, 26, 26, 0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  transition: background 0.15s;
+}
+.expander-header:hover { background: rgba(230, 32, 32, 0.04); }
+
+.expander-body {
+  padding: 0.75rem 0.9rem;
+  font-size: 0.82rem;
+  color: #1A1A1A;
+  border-top: 1px solid rgba(230, 32, 32, 0.08);
+}
+
+/* ── Memory pills ─────────────────────────────────────────────────────── */
+
+.memory-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+  border: 1px solid rgba(230, 32, 32, 0.2);
+  background: rgba(230, 32, 32, 0.04);
+  color: rgba(26, 26, 26, 0.75);
+  white-space: nowrap;
+}
+.memory-pill.warning {
+  border-color: rgba(198, 32, 32, 0.3);
+  background: rgba(198, 32, 32, 0.05);
+  color: rgba(180, 30, 30, 0.85);
+}
+
+/* ── Trigger badge (ops) ──────────────────────────────────────────────── */
+
+.trigger-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.7rem;
+  border-radius: 20px;
+  background: rgba(230, 32, 32, 0.08);
+  color: #E62020;
+  border: 1px solid rgba(230, 32, 32, 0.25);
+  margin-right: 0.5rem;
+}
+
+/* ── Success / info cards ─────────────────────────────────────────────── */
+
+.success-card {
+  background: rgba(76, 175, 130, 0.05);
+  border: 1px solid rgba(76, 175, 130, 0.25);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  color: rgba(50, 120, 80, 0.9);
+  font-size: 0.85rem;
+}
+
+/* ── Login screen ─────────────────────────────────────────────────────── */
+
+.login-container {
+  min-height: calc(100vh - 72px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 6vh;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-bottom: 2rem;
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(230, 32, 32, 0.15);
+  border-radius: 12px;
+  padding: 2.5rem;
+  width: 460px;
+  max-width: 100%;
+}
+
+/* ── Ops card ─────────────────────────────────────────────────────────── */
+
+.ops-card {
+  background: linear-gradient(135deg, rgba(230,32,32,0.04) 0%, rgba(255,248,238,0.7) 100%);
+  border: 1px solid rgba(230, 32, 32, 0.18);
+  border-radius: 10px;
+  padding: 1.4rem 1.6rem;
+  margin-bottom: 1.2rem;
+}
+
+/* ── kv-line (ops views) ──────────────────────────────────────────────── */
+
+.kv-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(230, 32, 32, 0.08);
+  font-size: 0.85rem;
+}
+.kv-key {
+  color: rgba(230, 32, 32, 0.65);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+.kv-val { color: #1A1A1A; text-align: right; max-width: 70%; }
+
+/* ── Scrollbars ───────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(230, 32, 32, 0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(230, 32, 32, 0.35); }
+
+hr { border-color: rgba(230, 32, 32, 0.1); margin: 0.8rem 0; }

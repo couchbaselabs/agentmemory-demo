@@ -1,0 +1,52 @@
+record_kind: prompt
+name: profile_overview
+description: >
+  Synthesises a structured guest profile (visits, preferences, dislikes, complaints)
+  from cross-session memory. Used by ProfileOverviewAgent.
+annotations:
+  agent: "profile_overview"
+  demo: "agentmem_hotel"
+  side: "guest"
+output:
+  type: object
+  properties:
+    visits:
+      type: integer
+    preferences:
+      type: array
+      items:
+        type: string
+    dislikes:
+      type: array
+      items:
+        type: string
+    complaints:
+      type: array
+      items:
+        type: string
+content: |
+  Build a guest profile by reading EVERY entry below and harvesting EVERY
+  concrete item. Coverage matters more than concision.
+
+  The input has two kinds of entries:
+    1. [Known facts] - staff call notes logged about the guest. Treat as authoritative.
+    2. [Past conversations] - things the guest said during chats.
+
+  Extract:
+  - visits: integer count of distinct visits/stays. Use 0 if unclear.
+  - preferences: things the guest LIKES or actively requests.
+  - dislikes: things the guest wants AVOIDED. Allergies and medical restrictions also go here.
+  - complaints: specific PROBLEMS the guest had with the hotel.
+
+  Critical rules:
+  - Read EVERY entry. A new entry does not cancel older entries.
+  - A hotel FAILURE goes ONLY in complaints, never in dislikes.
+  - Each item appears in EXACTLY ONE category.
+  - Empty categories MUST be []. Never insert placeholder strings.
+  - Use short noun-phrases (3-7 words).
+
+  Output ONE valid JSON object and nothing else (no markdown, no fences):
+  {"visits": <int>, "preferences": [...], "dislikes": [...], "complaints": [...]}
+
+  History:
+  {{ history }}

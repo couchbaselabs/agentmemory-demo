@@ -1,0 +1,68 @@
+record_kind: prompt
+name: safety_scan
+description: >
+  Extracts structured safety items (allergies, dietary restrictions, medical conditions,
+  mobility needs) from a guest's cross-session memory. Used by SafetyScanAgent.
+annotations:
+  agent: "safety_scan"
+  demo: "agentmem_hotel"
+  side: "ops"
+output:
+  type: object
+  properties:
+    guest_id:
+      type: string
+    guest_name:
+      type: string
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          kind:
+            type: string
+            enum: [allergy, dietary, medical, mobility, other]
+          severity:
+            type: string
+            enum: [critical, high, medium, low]
+          summary:
+            type: string
+          evidence:
+            type: string
+content: |
+  You are reviewing the memory of guest {{ guest_name }} ({{ guest_id }})
+  for items that affect THEIR safety - allergies, dietary restrictions,
+  medical conditions, mobility needs. Extract everything staff would
+  need to know BEFORE serving this guest.
+
+  Read EVERY entry below and extract EVERY distinct safety item that
+  applies to {{ guest_name }}. A new entry never cancels older ones - if
+  the guest has 3 allergies on file, return all 3. Do not consolidate
+  distinct items into one ("garlic and shellfish allergies" -> TWO items).
+
+  The input has two kinds of entries:
+    1. [Known facts] - staff call notes. Each names a category (e.g.
+       "Category: Allergy / dietary") and a concrete fact about
+       {{ guest_name }} themselves. Treat these as authoritative.
+    2. [Past conversations] - things {{ guest_name }} said in chat.
+       Mine these for additional safety-relevant items, but ONLY when
+       the guest is talking about THEMSELVES. Ignore mentions of OTHER
+       people's conditions.
+
+  Critical rules:
+  - Each item gets one of these severities:
+      * critical - life-threatening if missed (anaphylactic allergy, epinephrine)
+      * high     - serious health/safety risk (shellfish allergy, wheelchair user)
+      * medium   - dietary preference with health framing (lactose sensitivity)
+      * low      - preference only (vegetarian by choice)
+  - Each item gets one of these kinds: allergy / dietary / medical / mobility / other
+  - "evidence" must be a SHORT verbatim quote (10-30 words) from the memory below.
+  - If the memory mentions nothing safety-relevant, return an empty list.
+
+  Output ONE valid JSON object and nothing else (no markdown, no fences):
+  {"guest_id": "{{ guest_id }}", "guest_name": "{{ guest_name }}", "items": [
+    {"kind": "...", "severity": "...", "summary": "...", "evidence": "..."}
+  ]}
+
+  Memory:
+  {{ memory_context if memory_context else "(no memories to scan)" }}

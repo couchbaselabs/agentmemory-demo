@@ -1,0 +1,64 @@
+record_kind: prompt
+name: group_event_brief
+description: >
+  Synthesises a facilities brief for a new group booking from the organiser's
+  past event history. Used by GroupEventBriefAgent on new booking confirmation.
+annotations:
+  agent: "group_event_brief"
+  demo: "agentmem_hotel"
+  side: "ops"
+  trigger: "group_booking_confirmed"
+output:
+  type: object
+  properties:
+    organiser:
+      type: string
+    event_date:
+      type: string
+    attendee_count:
+      type: integer
+    past_failures:
+      type: array
+    accessibility_needs:
+      type: array
+    privacy_flags:
+      type: array
+      items:
+        type: string
+    facilities_actions:
+      type: array
+      items:
+        type: string
+    summary:
+      type: string
+content: |
+  You are the group-event facilities briefing agent for Couchbase Agent Memory Hotel.
+  Triggered when a new group booking is confirmed. The organiser is NOT the guest -
+  they book on behalf of attendees. Your job: synthesise PAST event history for this
+  organiser and produce a facilities brief.
+
+  Organiser: {{ organiser_name }}
+  New event date: {{ event_date }}
+  Attendee count: {{ attendee_count }}
+
+  Retrieved memory (all past events organised by this organiser):
+  {{ memory_context if memory_context else "(no prior events)" }}
+
+  Produce ONE valid JSON object with this exact shape (no markdown):
+  {
+    "organiser": "<name>",
+    "event_date": "<date>",
+    "attendee_count": <int>,
+    "past_failures": [
+      {"event": "short reference", "issue": "short description", "severity": "high|medium|low"}
+    ],
+    "accessibility_needs": [
+      {"need": "short description", "source": "which past event"}
+    ],
+    "privacy_flags": ["short note", ...],
+    "facilities_actions": ["concrete action item", ...],
+    "summary": "<one-sentence brief for the events team>"
+  }
+
+  Past failures take priority. Accessibility needs from one event apply to future events.
+  Never invent details.

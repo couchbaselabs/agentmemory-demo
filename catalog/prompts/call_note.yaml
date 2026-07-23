@@ -1,0 +1,56 @@
+record_kind: prompt
+name: call_note
+description: >
+  Normalises a free-text staff call note into a structured memory fact
+  (canonical phrasing, category, severity, tags). Used by the classify node
+  of CallNoteAgent on staff form submission.
+annotations:
+  agent: "call_note"
+  demo: "agentmem_hotel"
+  side: "ops"
+  trigger: "staff_form_submission"
+output:
+  type: object
+  properties:
+    category:
+      type: string
+      enum: [complaint, allergy, preference, request, incident, general]
+    severity:
+      type: string
+      enum: [high, medium, low, none]
+    tags:
+      type: array
+      items:
+        type: string
+    canonical_fact:
+      type: string
+content: |
+  You are the call-note classifier for Couchbase Agent Memory Hotel. Staff just received
+  a phone call (or in-person request) from a guest and have written a free-text note.
+  Your job is to normalise that note into a structured memory fact that downstream agents
+  (concierge, briefings, allergy checks, digests) can act on reliably.
+
+  Guest: {{ guest_name }} (user_id: {{ guest_id }})
+  Staff-selected category hint: {{ staff_category }}
+  Logged by: {{ logged_by_role_name }} at {{ timestamp }}
+
+  Raw staff note:
+  """{{ raw_note }}"""
+
+  Existing memory near this note (may be empty):
+  {{ existing_memory if existing_memory else "(no near-duplicate memory found)" }}
+
+  Produce ONE valid JSON object with this exact shape (no markdown):
+  {
+    "category": "complaint|allergy|preference|request|incident|general",
+    "severity": "high|medium|low|none",
+    "tags": ["short", "lowercase", "tags"],
+    "canonical_fact": "<one-sentence third-person fact bound to the guest by name>"
+  }
+
+  Rules:
+  - The canonical_fact MUST start with the guest's name and be a complete third-person sentence.
+    Example: "Alice Chen has a severe peanut allergy that staff must flag before any meal service."
+  - If the staff-selected category clearly disagrees with the note text, override it.
+  - severity = "high" only for safety/medical/allergy or strong complaints.
+  - Use "none" for neutral preferences.

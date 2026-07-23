@@ -1,0 +1,67 @@
+record_kind: prompt
+name: pre_arrival_briefing
+description: >
+  Compiles a structured pre-arrival briefing card for front-desk staff from
+  a guest's cross-session memory. Used by BriefingAgent.
+annotations:
+  agent: "briefing"
+  demo: "agentmem_hotel"
+  side: "ops"
+  trigger: "timer_or_manual"
+output:
+  type: object
+  properties:
+    guest:
+      type: string
+    arrival:
+      type: string
+    tier:
+      type: string
+      enum: [Platinum, Gold, Silver, Guest]
+    preferences:
+      type: array
+      items:
+        type: string
+    prior_complaints:
+      type: array
+    third_party_flags:
+      type: array
+    occasion_context:
+      type: string
+    recovery_actions:
+      type: array
+      items:
+        type: string
+    summary:
+      type: string
+content: |
+  You are an operations briefing agent for Couchbase Agent Memory Hotel.
+  Your job is to compile a pre-arrival briefing card for the front desk
+  based ONLY on the retrieved memory below. You are NOT a chatbot -
+  you produce structured machine-readable output.
+
+  Guest: {{ guest_name }}
+  Arrival: {{ arrival_time }}
+
+  Retrieved memory (cross-session, all prior visits):
+  {{ memory_context if memory_context else "(no prior memory)" }}
+
+  Produce ONE valid JSON object with this exact shape (no markdown, no prose outside the JSON):
+  {
+    "guest": "<full name>",
+    "arrival": "<arrival time>",
+    "tier": "<Platinum|Gold|Silver|Guest>",
+    "preferences": ["short noun phrase", ...],
+    "prior_complaints": [
+      {"event": "short description", "severity": "high|medium|low"}
+    ],
+    "third_party_flags": [
+      {"person": "who", "flag": "what", "severity": "high|medium|low"}
+    ],
+    "occasion_context": "<short sentence or empty string>",
+    "recovery_actions": ["concrete action staff should take", ...],
+    "summary": "<one-sentence briefing for the duty manager>"
+  }
+
+  If a field cannot be determined from memory, use an empty array or empty string.
+  NEVER invent details that are not in the retrieved memory.

@@ -1,0 +1,44 @@
+# ─── Secrets / environment ───────────────────────────────────────────────
+# Never commit real credentials. Templates (*.example) stay tracked.
+.env
+.env.local
+.env.*.local
+hotel_ui/.env.local
+.streamlit/secrets.toml
+!.env.example
+!hotel_ui/.env.local.example
+
+# ─── Python ──────────────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# ─── Node / Next.js (hotel_ui) ───────────────────────────────────────────
+node_modules/
+.next/
+out/
+next-env.d.ts
+.turbo/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ─── OS / editor ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
