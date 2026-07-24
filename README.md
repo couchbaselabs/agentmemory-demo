@@ -17,137 +17,6 @@ Two UI options ship with the demo:
 
 ---
 
-## Why this exists
-
-Hotels lose information constantly. A guest mentions a shellfish allergy at dinner once, it gets logged in a notebook, and three years later when their husband orders room service nobody remembers. A group organiser had a bad experience with AV equipment last quarter, the events team rotates, and the same problem ships again.
-
-This demo shows what changes when memory becomes the source of truth instead of a side effect of logging.
-
-### Three guest personas
-
-| Persona | Profile | Capability tested |
-| --- | --- | --- |
-| **Alice** (Corporate Traveler) | 5–6 dense business stays per year | Cross-session retrieval under a dense memory store. Recent complaints outrank older positives. |
-| **Bob** (Occasion Traveler) | 2–3 sentimental stays per year, months apart | Stitching low-salience facts across long gaps. Third-party memory (husband's allergy, mother's mobility). |
-| **Charlie** (Group Organiser) | Books for 30–50 attendees per event, doesn't stay himself | Indirect-relationship reasoning. Multi-hop retrieval ("better than last time"). Contradiction handling across past events. |
-
----
-
-## Architecture
-
-![Agent architecture — eight LangGraph agents reading from and writing to one shared Couchbase Agent Memory store](docs/agent-arch.png)
-
-### What each agent does
-
-Every agent is a LangGraph `StateGraph`. Each has its own prompt, output schema, and write target. They all share one memory store and one retrieval toolkit (`agents/memory_toolkit.py`): every `session.search_memory` call goes through `search_memories`, every prompt-ready memory dump goes through `format_memories`, and per-agent retrieval depth (`relevant_k`) lives in `agents/config.py`. Changing how memory is fetched or rendered is a one-file edit.
-
-| Agent | Trigger | Reads | Writes | Output |
-| --- | --- | --- | --- | --- |
-| **ConciergeGraph** | Guest chat message | Guest memory across all sessions | Guest namespace | Natural-language reply |
-| **ProfileOverviewGraph** | Guest portal sidebar render | Guest memory across all sessions | (read-only) | Structured profile: visits, preferences, dislikes, complaints, allergies, accessibility |
-| **BriefingGraph** | Manual button or timer (T-12h) | Guest memory (full) | `role_front_desk` | Briefing card: preferences, complaints, safety flags (guest + companions), recovery actions |
-| **SafetyScanGraph** | Ops dashboard load | Guest memory scoped to safety/dietary | (read-only) | Allergy/safety items shown on dashboard cards |
-| **FlagGraph** | Form submission (room service, booking, dietary intake) | Guest memory scoped to safety/dietary | `role_front_desk` (only if `has_flag=true`) | Allergy/safety flag — LLM cross-checks trigger payload against retrieved memory, cites `[block:<id>]` |
-| **DigestGraph** | Monthly schedule or "Run now" | All guests in parallel | `role_gm` | Monthly report: recurring complaints, requests, spend/loyalty signals, action items |
-| **GroupEventBriefGraph** | New group booking confirmed | Organiser's memory across past events | `role_events` | Facilities brief: failures, accessibility needs, privacy flags, action items |
-| **CallNoteGraph** | Staff call-note form/upload | Guest memory (dedupe scope) | Guest namespace | Structured fact written into the guest's session |
-
-### Memory retrieval design
-
-`agents/memory_toolkit.py` is the single point of contact with the SDK:
-
-- **`search_memories(session, queries, k)`** — fans out queries in parallel threads, deduplicates on `block_id`, and supplements results with a direct `session.get_memory()` call (run concurrently) to catch blocks not yet indexed in the Couchbase FTS vector index.
-- **`_record_from_memory_block`** — resolves block content in order: `summary → contexts → fact → raw message` (fallback for unprocessed blocks).
-- **`format_memories(records)`** — renders records into a prompt-ready sectioned string.
-- **`make_retrieval_node(queries, k)`** — LangGraph node factory used by briefing, safety scan, and group event brief agents.
-- **`get_user_session`** — always uses the newest session as the entry point so recently written blocks are reachable via direct supplement.
-
-### LangGraph topology
-
-```
-ConciergeGraph          START → query-rewrite → memory-retrieval → response-agent → END
-ProfileOverviewGraph    START → memory-retrieval (10 queries) → profile-agent → END
-BriefingGraph           START → memory-search (10 queries + direct) → briefing-agent → END
-SafetyScanGraph         START → memory-retrieval → safety-scan-agent → END
-FlagGraph               START → memory-search (base + payload-specific) → flag-agent → END
-DigestGraph             START → multi-user-fan-out (N guests × 7 queries) → digest-agent → END
-GroupEventBriefGraph    START → memory-search (organiser, event scope) → group-brief-agent → END
-CallNoteGraph           START → classify → memory-search (dedupe) → enrich → write → END
-```
-
-### Memory write annotations
-
-| Source | Namespace | Annotations |
-| --- | --- | --- |
-| ConciergeGraph | guest | `source=concierge_agent` |
-| BriefingGraph | `role_front_desk` | `source=pre_arrival_briefing`, `ref_user=<guest_id>` |
-| FlagGraph (when flagged) | `role_front_desk` | `source=safety_flag`, `ref_user=<guest_id>` |
-| DigestGraph | `role_gm` | `source=monthly_ops_digest` |
-| GroupEventBriefGraph | `role_events` | `source=group_event_brief`, `ref_user=<organiser_id>` |
-| CallNoteGraph | guest | `source=call_note`, `category=<classification>` |
-
----
-
-## File layout
-
-```
-multi_agent_usage/
-├── README.md
-├── docs/                           SETUP.md + TROUBLESHOOTING.md
-├── requirements.txt                Python dependencies
-├── .env.example                    template for env vars
-│
-├── agentmem_hotel.py               Guest concierge UI — Streamlit version
-├── agentmem_hotel_ops.py           Operations portal UI — Streamlit version
-│
-├── hotel_server.py                 FastAPI backend for the Next.js UI
-│                                   Exposes /auth, /chat, /ops/* SSE endpoints
-├── start_server.sh                 Starts hotel_server.py (used by PM2)
-│
-├── prompts.py                      Jinja2 prompt templates for all agents
-├── couchbase_setup.py              Seed data ingestion pipeline
-│
-├── data/
-│   └── hotel_demo.json             Alice / Bob / Charlie seed conversations
-│
-├── catalog/
-│   └── prompts/                    YAML prompt definitions for agentc catalog
-│
-├── agents/                         One file per agent
-│   ├── __init__.py
-│   ├── memory_toolkit.py           Shared retrieval: search_memories,
-│   │                               format_memories, make_retrieval_node,
-│   │                               QueryRewriter. The ONLY place that calls
-│   │                               session.search_memory / get_memory.
-│   ├── config.py                   MEMORY_K per agent — tune retrieval depth here
-│   ├── _ops_utils.py               Internal helpers: role writes, JSON parse,
-│   │                               session resolution (get_user_session)
-│   ├── concierge_agent.py
-│   ├── profile_overview_agent.py
-│   ├── briefing_agent.py
-│   ├── safety_scan_agent.py
-│   ├── flag_agent.py
-│   ├── digest_agent.py
-│   ├── group_event_brief_agent.py
-│   └── call_note_agent.py
-│
-└── hotel_ui/                       Next.js frontend
-    ├── app/
-    │   ├── guest/                  Guest chat portal pages
-    │   └── ops/                    Operations portal pages
-    ├── components/
-    │   ├── guest/                  Chat UI components
-    │   ├── ops/                    Ops view components (briefings, flags, digest, …)
-    │   └── shared/                 StatusPipeline, OpsViewWrapper, etc.
-    ├── store/                      Zustand state (opsStore, guestStore)
-    ├── lib/                        API helpers, types, SSE streaming
-    ├── .env.local.example          Template for Next.js env vars
-    ├── package.json
-    └── start_ui.sh                 Starts next start (used by PM2)
-```
-
----
-
 ## Setup
 
 > For a step-by-step, from-scratch walkthrough and a symptom→fix reference, see
@@ -325,6 +194,137 @@ pm2 restart hotel-server --update-env
 ```
 
 Access on EC2: guest portal at `http://<ec2-public-ip>:8501/guest`, ops portal at `http://<ec2-public-ip>:8501/ops`.
+
+---
+
+## Why this exists
+
+Hotels lose information constantly. A guest mentions a shellfish allergy at dinner once, it gets logged in a notebook, and three years later when their husband orders room service nobody remembers. A group organiser had a bad experience with AV equipment last quarter, the events team rotates, and the same problem ships again.
+
+This demo shows what changes when memory becomes the source of truth instead of a side effect of logging.
+
+### Three guest personas
+
+| Persona | Profile | Capability tested |
+| --- | --- | --- |
+| **Alice** (Corporate Traveler) | 5–6 dense business stays per year | Cross-session retrieval under a dense memory store. Recent complaints outrank older positives. |
+| **Bob** (Occasion Traveler) | 2–3 sentimental stays per year, months apart | Stitching low-salience facts across long gaps. Third-party memory (husband's allergy, mother's mobility). |
+| **Charlie** (Group Organiser) | Books for 30–50 attendees per event, doesn't stay himself | Indirect-relationship reasoning. Multi-hop retrieval ("better than last time"). Contradiction handling across past events. |
+
+---
+
+## Architecture
+
+![Agent architecture — eight LangGraph agents reading from and writing to one shared Couchbase Agent Memory store](docs/agent-arch.png)
+
+### What each agent does
+
+Every agent is a LangGraph `StateGraph`. Each has its own prompt, output schema, and write target. They all share one memory store and one retrieval toolkit (`agents/memory_toolkit.py`): every `session.search_memory` call goes through `search_memories`, every prompt-ready memory dump goes through `format_memories`, and per-agent retrieval depth (`relevant_k`) lives in `agents/config.py`. Changing how memory is fetched or rendered is a one-file edit.
+
+| Agent | Trigger | Reads | Writes | Output |
+| --- | --- | --- | --- | --- |
+| **ConciergeGraph** | Guest chat message | Guest memory across all sessions | Guest namespace | Natural-language reply |
+| **ProfileOverviewGraph** | Guest portal sidebar render | Guest memory across all sessions | (read-only) | Structured profile: visits, preferences, dislikes, complaints, allergies, accessibility |
+| **BriefingGraph** | Manual button or timer (T-12h) | Guest memory (full) | `role_front_desk` | Briefing card: preferences, complaints, safety flags (guest + companions), recovery actions |
+| **SafetyScanGraph** | Ops dashboard load | Guest memory scoped to safety/dietary | (read-only) | Allergy/safety items shown on dashboard cards |
+| **FlagGraph** | Form submission (room service, booking, dietary intake) | Guest memory scoped to safety/dietary | `role_front_desk` (only if `has_flag=true`) | Allergy/safety flag — LLM cross-checks trigger payload against retrieved memory, cites `[block:<id>]` |
+| **DigestGraph** | Monthly schedule or "Run now" | All guests in parallel | `role_gm` | Monthly report: recurring complaints, requests, spend/loyalty signals, action items |
+| **GroupEventBriefGraph** | New group booking confirmed | Organiser's memory across past events | `role_events` | Facilities brief: failures, accessibility needs, privacy flags, action items |
+| **CallNoteGraph** | Staff call-note form/upload | Guest memory (dedupe scope) | Guest namespace | Structured fact written into the guest's session |
+
+### Memory retrieval design
+
+`agents/memory_toolkit.py` is the single point of contact with the SDK:
+
+- **`search_memories(session, queries, k)`** — fans out queries in parallel threads, deduplicates on `block_id`, and supplements results with a direct `session.get_memory()` call (run concurrently) to catch blocks not yet indexed in the Couchbase FTS vector index.
+- **`_record_from_memory_block`** — resolves block content in order: `summary → contexts → fact → raw message` (fallback for unprocessed blocks).
+- **`format_memories(records)`** — renders records into a prompt-ready sectioned string.
+- **`make_retrieval_node(queries, k)`** — LangGraph node factory used by briefing, safety scan, and group event brief agents.
+- **`get_user_session`** — always uses the newest session as the entry point so recently written blocks are reachable via direct supplement.
+
+### LangGraph topology
+
+```
+ConciergeGraph          START → query-rewrite → memory-retrieval → response-agent → END
+ProfileOverviewGraph    START → memory-retrieval (10 queries) → profile-agent → END
+BriefingGraph           START → memory-search (10 queries + direct) → briefing-agent → END
+SafetyScanGraph         START → memory-retrieval → safety-scan-agent → END
+FlagGraph               START → memory-search (base + payload-specific) → flag-agent → END
+DigestGraph             START → multi-user-fan-out (N guests × 7 queries) → digest-agent → END
+GroupEventBriefGraph    START → memory-search (organiser, event scope) → group-brief-agent → END
+CallNoteGraph           START → classify → memory-search (dedupe) → enrich → write → END
+```
+
+### Memory write annotations
+
+| Source | Namespace | Annotations |
+| --- | --- | --- |
+| ConciergeGraph | guest | `source=concierge_agent` |
+| BriefingGraph | `role_front_desk` | `source=pre_arrival_briefing`, `ref_user=<guest_id>` |
+| FlagGraph (when flagged) | `role_front_desk` | `source=safety_flag`, `ref_user=<guest_id>` |
+| DigestGraph | `role_gm` | `source=monthly_ops_digest` |
+| GroupEventBriefGraph | `role_events` | `source=group_event_brief`, `ref_user=<organiser_id>` |
+| CallNoteGraph | guest | `source=call_note`, `category=<classification>` |
+
+---
+
+## File layout
+
+```
+multi_agent_usage/
+├── README.md
+├── docs/                           SETUP.md + TROUBLESHOOTING.md
+├── requirements.txt                Python dependencies
+├── .env.example                    template for env vars
+│
+├── agentmem_hotel.py               Guest concierge UI — Streamlit version
+├── agentmem_hotel_ops.py           Operations portal UI — Streamlit version
+│
+├── hotel_server.py                 FastAPI backend for the Next.js UI
+│                                   Exposes /auth, /chat, /ops/* SSE endpoints
+├── start_server.sh                 Starts hotel_server.py (used by PM2)
+│
+├── prompts.py                      Jinja2 prompt templates for all agents
+├── couchbase_setup.py              Seed data ingestion pipeline
+│
+├── data/
+│   └── hotel_demo.json             Alice / Bob / Charlie seed conversations
+│
+├── catalog/
+│   └── prompts/                    YAML prompt definitions for agentc catalog
+│
+├── agents/                         One file per agent
+│   ├── __init__.py
+│   ├── memory_toolkit.py           Shared retrieval: search_memories,
+│   │                               format_memories, make_retrieval_node,
+│   │                               QueryRewriter. The ONLY place that calls
+│   │                               session.search_memory / get_memory.
+│   ├── config.py                   MEMORY_K per agent — tune retrieval depth here
+│   ├── _ops_utils.py               Internal helpers: role writes, JSON parse,
+│   │                               session resolution (get_user_session)
+│   ├── concierge_agent.py
+│   ├── profile_overview_agent.py
+│   ├── briefing_agent.py
+│   ├── safety_scan_agent.py
+│   ├── flag_agent.py
+│   ├── digest_agent.py
+│   ├── group_event_brief_agent.py
+│   └── call_note_agent.py
+│
+└── hotel_ui/                       Next.js frontend
+    ├── app/
+    │   ├── guest/                  Guest chat portal pages
+    │   └── ops/                    Operations portal pages
+    ├── components/
+    │   ├── guest/                  Chat UI components
+    │   ├── ops/                    Ops view components (briefings, flags, digest, …)
+    │   └── shared/                 StatusPipeline, OpsViewWrapper, etc.
+    ├── store/                      Zustand state (opsStore, guestStore)
+    ├── lib/                        API helpers, types, SSE streaming
+    ├── .env.local.example          Template for Next.js env vars
+    ├── package.json
+    └── start_ui.sh                 Starts next start (used by PM2)
+```
 
 ---
 
