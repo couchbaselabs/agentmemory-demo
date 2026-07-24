@@ -88,23 +88,6 @@ CallNoteGraph           START → classify → memory-search (dedupe) → enrich
 
 ---
 
-## Role-based access (ops portal)
-
-Sign-in is by role, not by person. Each role only sees views appropriate to its function.
-
-| View | GM | Front Desk | Events | Facilities |
-| --- | :-: | :-: | :-: | :-: |
-| Dashboard | ✓ | ✓ | ✓ | ✓ |
-| Pre-Arrival Briefings | ✓ | ✓ | | |
-| Food Allergen Check | ✓ | ✓ | | |
-| Group Event Pre-Brief | ✓ | | ✓ | ✓ |
-| Monthly Ops Digest | ✓ | | | |
-| Log Guest Call | ✓ | ✓ | | |
-| Role Memory inspector | own + all | own only | own only | own only |
-| How It Works | ✓ | ✓ | ✓ | ✓ |
-
----
-
 ## File layout
 
 ```
