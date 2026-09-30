@@ -22,6 +22,9 @@ Two UI options ship with the demo:
 > For a step-by-step, from-scratch walkthrough and a symptom→fix reference, see
 > [`docs/SETUP.md`](docs/SETUP.md) and [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md).
 
+> **Fastest path (macOS + Docker):** `make demo` sets everything up locally in one
+> command. See [`docs/QUICKSTART.md`](docs/QUICKSTART.md).
+
 ### Prerequisites
 
 These must already be in place before the steps below — this demo does not install
@@ -273,7 +276,9 @@ CallNoteGraph           START → classify → memory-search (dedupe) → enrich
 ```
 multi_agent_usage/
 ├── README.md
-├── docs/                           SETUP.md + TROUBLESHOOTING.md
+├── Makefile                        `make demo` and other setup/run targets (`make help`)
+├── scripts/                        helpers used by the Makefile (Docker backend, preflight)
+├── docs/                           QUICKSTART.md + SETUP.md + TROUBLESHOOTING.md
 ├── requirements.txt                Python dependencies
 ├── .env.example                    template for env vars
 │

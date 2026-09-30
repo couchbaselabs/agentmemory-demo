@@ -42,3 +42,6 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+
+# make up: logs and pids
+.run/
