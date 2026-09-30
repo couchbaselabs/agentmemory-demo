@@ -1,5 +1,7 @@
 # Docs
 
+- **[QUICKSTART.md](./QUICKSTART.md)** — fastest path on a Mac: `make demo` runs the whole
+  local stack in Docker (what to download first, one command, fixes for common snags).
 - **[SETUP.md](./SETUP.md)** — in-depth, from-scratch setup guide (services,
   Python env, SDK install, env vars, seeding, running both UIs, verification).
 - **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** — symptom → cause → fix for the
