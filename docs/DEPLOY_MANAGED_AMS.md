@@ -24,13 +24,12 @@ Server** on Couchbase Capella.
 
 6. **Choose an embedding model and LLM** from your OpenAI integration.
 
-7. **Advanced config** is prefilled with defaults (except health interval
-   seconds — enter any value within bounds).
+7. **Advanced config** is prefilled with defaults, you can change those values too, just stay within bounds.
 
 8. **Hit Deploy** and wait for the status to reach **Healthy**.
 
 9. **Add Allowed IP** — from the AMS instance menu (⋮), click "Add Allowed IP"
-   and add your server's public IP (e.g. `54.196.134.78/32`).
+   and add your server's public IP (e.g. `54.196.164.78/32`).
 
 10. **Generate API Key** — click "Generate API Key", create a key, and
     **copy the secret token** (shown only once).
